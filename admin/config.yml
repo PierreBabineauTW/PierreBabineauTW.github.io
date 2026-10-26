@@ -1,0 +1,156 @@
+# Administration du contenu — Masalex Conseil (Decap CMS, gratuit).
+#
+# FONCTIONNEMENT (simple) :
+# - Le contenu modifiable (offres, équipe, témoignages, FAQ) vit dans src/content/*.json.
+# - L'équipe édite via l'interface /admin : chaque "Publier" crée un commit Git,
+#   et l'hébergeur reconstruit + republie le site automatiquement.
+# - Les photos téléversées vont dans public/uploads (rien à faire à la main).
+#
+# CONNEXION :
+# - En production : via GitHub (backend ci-dessous). Il faut UNE fois : créer une
+#   "GitHub OAuth App" (Settings > Developer settings) puis renseigner son Client ID
+#   dans un mini-service d'authentification (ex : proxy OAuth déployé en 2 minutes,
+#   voir https://decapcms.org/docs/github-backend/). Sans cela, seul l'accès local marche.
+# - Le `client_secret` du proxy OAuth ne doit JAMAIS être commité : variable
+#   d'environnement côté hébergeur uniquement. Ce dépôt ne contient aucun secret.
+# - En local : décommenter `local_backend: true` ci-dessous, lancer `npm run cms`
+#   dans un terminal, ouvrir /admin et cliquer "Login" (aucun mot de passe).
+#   Penser à RECOMMENTER avant de commiter.
+
+backend:
+  name: github
+  repo: PierreBabineauTW/masalex-conseil
+  branch: master
+  # local_backend: true
+
+# Les brouillons restent modifiables avant publication (option simple et sûre).
+publish_mode: editorial_workflow
+media_folder: public/uploads
+public_folder: /uploads
+locale: fr
+
+collections:
+  - name: jobs
+    label: "Offres d'emploi"
+    files:
+      - name: jobs
+        label: "Liste des offres"
+        file: src/content/jobs.json
+        fields:
+          - label: Offres
+            name: jobs
+            widget: list
+            summary: "{{fields.title}} ({{fields.category}})"
+            fields:
+              - { label: "Titre du poste", name: title, widget: string, hint: "Ex : Juriste Senior en Droit des Affaires (H/F)" }
+              - label: "Identifiant URL (slug)"
+                name: slug
+                widget: string
+                hint: "Minuscules, chiffres, tirets. Ex : juriste-senior-droit-affaires. Ne plus le changer une fois publié."
+              - { label: "Domaine", name: category, widget: select, options: ["Juridique", "Tertiaire"] }
+              - label: "Spécialité (optionnel)"
+                name: specialty
+                widget: string
+                required: false
+                hint: "Ex : Droit des affaires"
+              - label: "Lieu"
+                name: location
+                widget: string
+                default: "Monaco · Nice · Paris"
+                hint: "Ville ou zone, ex : Monaco"
+              - label: "Type de contrat (optionnel)"
+                name: contractType
+                widget: select
+                required: false
+                options: ["Freelance", "CDI", "CDD/TT"]
+              - label: "Salaire (optionnel)"
+                name: salary
+                widget: string
+                required: false
+                hint: "Ex : 45 k€. Affiché tel quel ; vide = « Selon profil »"
+              - label: "Date de publication"
+                name: publishedAt
+                widget: datetime
+                hint: "Détermine l'ordre d'affichage (plus récent d'abord)"
+              - label: "Date de mise à jour (optionnel)"
+                name: updatedAt
+                widget: datetime
+                required: false
+              - { label: "Résumé court", name: excerpt, widget: text, hint: "2 phrases : cartes, recherche, Google" }
+              - label: "Description complète"
+                name: description
+                widget: text
+                hint: "Page de l'offre. Une ligne vide = nouveau paragraphe."
+              - { label: "Photo", name: image, widget: image, default: "/sites/masalex-conseil/img/bureau-2.jpg", hint: "Paysage de préférence" }
+              - { label: "Lien de candidature", name: applyUrl, widget: string, hint: "URL https:// ou adresse mailto: — vérifié au build" }
+              - label: "Référence externe (optionnel, réservé ATS)"
+                name: externalId
+                widget: string
+                required: false
+              - label: "Publiée en ligne"
+                name: active
+                widget: boolean
+                default: true
+                hint: "Décoché = l'offre disparaît du site (listes, recherche, Google)"
+
+  - name: team
+    label: Équipe
+    files:
+      - name: team
+        label: "Membres de l'équipe"
+        file: src/content/team.json
+        fields:
+          - label: Membres
+            name: team
+            widget: list
+            summary: "{{fields.name}} — {{fields.role}}"
+            fields:
+              - { label: "Nom complet", name: name, widget: string }
+              - { label: "Poste", name: role, widget: string, hint: "Ex : Consultante en recrutement" }
+              - label: "Photo portrait (optionnel)"
+                name: image
+                widget: image
+                required: false
+                hint: "Sans photo, les initiales s'affichent avec la mention « Photo à venir »"
+              - { label: "Parcours et expérience", name: experience, widget: text }
+              - label: "Ce qu'il/elle aime"
+                name: likes
+                widget: list
+                field: { label: "Goût", name: gout, widget: string }
+              - label: "Ce qu'il/elle n'aime pas"
+                name: dislikes
+                widget: list
+                field: { label: "Petit travers", name: travers, widget: string }
+
+  - name: testimonials
+    label: Témoignages
+    files:
+      - name: testimonials
+        label: "Témoignages clients et candidats"
+        file: src/content/testimonials.json
+        fields:
+          - label: Témoignages
+            name: testimonials
+            widget: list
+            summary: "{{fields.name}} — {{fields.title}}"
+            fields:
+              - { label: "Témoignage", name: quote, widget: text }
+              - { label: "Nom", name: name, widget: string }
+              - { label: "Fonction", name: title, widget: string, hint: "Ex : Collaborateur en cabinet d'avocats" }
+              - { label: "Photo", name: image, widget: image }
+              - { label: "Description photo", name: alt, widget: string, hint: "Pour l'accessibilité, ex : Portrait d'une cliente" }
+
+  - name: faqs
+    label: FAQ
+    files:
+      - name: faqs
+        label: "Questions fréquentes"
+        file: src/content/faqs.json
+        fields:
+          - label: Questions
+            name: faqs
+            widget: list
+            summary: "{{fields.q}}"
+            fields:
+              - { label: "Question", name: q, widget: string }
+              - { label: "Réponse", name: a, widget: text }

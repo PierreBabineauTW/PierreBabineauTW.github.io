@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Administration — Masalex Conseil</title>
+    <!--
+      Interface d'administration du contenu (offres, équipe, témoignages, FAQ).
+      - En local : `npm run cms` dans un terminal, puis ouvrir /admin et se connecter (bouton unique, pas de mot de passe).
+      - En production : connexion via GitHub (voir backend dans config.yml).
+      Chaque enregistrement republie automatiquement le site (rebuild).
+
+      SÉCURITÉ :
+      - Version exacte épinglée (3.16.2) + hash d'intégrité SRI : si le CDN est
+        compromis ou le fichier altéré, le navigateur REFUSE de l'exécuter.
+      - Mettre à jour = changer la version ci-dessous + recalculer le hash
+        (voir dossier de sécurité), jamais de version flottante (^/latest).
+    -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/decap-cms@3.16.2/dist/decap-cms.js"
+      integrity="sha384-tbnFsiSBvMm2vOLu70Mx7HlnMj6kXxR0Tdo0USlY9564mb1AyMnIdCjOZ738PWPr"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body></body>
+</html>
