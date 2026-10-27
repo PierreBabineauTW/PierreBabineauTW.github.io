@@ -1,0 +1,41 @@
+name: MASALEX static export packaging (isolated)
+on:
+  push:
+    branches:
+      - build/masalex-wordpress-export-20261027
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package-static-export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact GitHub Pages export (isolated branch)
+        uses: actions/checkout@v4
+      - name: Copy public Next export into package folder
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p export
+          cp -a ./_next ./sites ./export/
+          if test -d uploads; then cp -a ./uploads ./export/; fi
+          find . -maxdepth 1 -type f \( -name '*.html' -o -name '*.svg' -o -name '*.png' -o -name '*.jpg' -o -name '*.webp' \) -exec cp -a '{}' ./export/ \;
+          for dir in services jobs poste candidat contact reussites zones a-mon-sujet _not-found; do
+            if test -d "$dir"; then
+              find "$dir" -type f -name '*.html' -print0 | while IFS= read -r -d '' f; do
+                mkdir -p "export/$(dirname "$f")"
+                cp -a "$f" "export/$f"
+              done
+            fi
+          done
+          test -s export/index.html
+          test -d export/_next/static/chunks
+          test -d export/sites/masalex-conseil/img
+          find export -type f | wc -l
+      - name: Upload immutable reference assets (no deploy)
+        uses: actions/upload-artifact@v4
+        with:
+          name: masalex-next-static-export-20261027
+          path: export/
+          if-no-files-found: error
+          retention-days: 3
